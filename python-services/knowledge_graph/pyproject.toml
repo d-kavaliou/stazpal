@@ -1,0 +1,11 @@
+[project]
+name = "knowledge-graph"
+version = "0.1.0"
+dependencies = [
+    "neo4j>=5.26",
+    "networkx>=3.4",
+    "fastapi>=0.115",
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "sentence-transformers>=3.0",
+]

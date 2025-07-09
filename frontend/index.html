@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StazPal Audio Services</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .service-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .service-section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .secondary-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .secondary-btn:hover {
+            background: #5a6268;
+        }
+
+        .danger-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .danger-btn:hover {
+            background: #c82333;
+        }
+
+        .success-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .success-btn:hover {
+            background: #218838;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .audio-controls {
+            margin-top: 15px;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .recording-indicator {
+            display: none;
+            color: #dc3545;
+            font-weight: bold;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+        }
+
+        .pulse {
+            width: 12px;
+            height: 12px;
+            background: #dc3545;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .service-status {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .service-status span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .status-dot.online {
+            background: #28a745;
+        }
+
+        .tts-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tts-controls label {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .tts-controls input[type="range"] {
+            width: 100%;
+        }
+
+        .tts-controls input[type="number"] {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ StazPal Audio Services</h1>
+        
+        <div class="service-status">
+            <span>STT Service: <div class="status-dot" id="stt-status"></div></span>
+            <span>TTS Service: <div class="status-dot" id="tts-status"></div></span>
+        </div>
+
+        <!-- Speech-to-Text Section -->
+        <div class="service-section">
+            <h2>🎤 Speech-to-Text</h2>
+            <div class="controls">
+                <button id="start-recording" class="primary-btn">
+                    <span>🎙️</span> Start Recording
+                </button>
+                <button id="stop-recording" class="danger-btn" disabled>
+                    <span>⏹️</span> Stop Recording
+                </button>
+                <div class="recording-indicator" id="recording-indicator">
+                    <div class="pulse"></div>
+                    Recording...
+                </div>
+            </div>
+            <div id="stt-status-msg" class="status info">Click "Start Recording" to begin</div>
+            <textarea id="stt-result" placeholder="Transcribed text will appear here..." readonly></textarea>
+        </div>
+
+        <!-- Text-to-Speech Section -->
+        <div class="service-section">
+            <h2>🔊 Text-to-Speech</h2>
+            <div class="tts-controls">
+                <label>
+                    Temperature: <span id="temp-value">1.0</span>
+                    <input type="range" id="temperature" min="0.1" max="2.0" step="0.1" value="1.0">
+                </label>
+                <label>
+                    Top-P: <span id="top-p-value">0.9</span>
+                    <input type="range" id="top-p" min="0.1" max="1.0" step="0.1" value="0.9">
+                </label>
+                <label>
+                    Top-K: <span id="top-k-value">50</span>
+                    <input type="range" id="top-k" min="1" max="100" step="1" value="50">
+                </label>
+            </div>
+            <textarea id="tts-input" placeholder="Enter text to convert to speech..."></textarea>
+            <div class="controls">
+                <button id="generate-speech" class="primary-btn">
+                    <span>🔊</span> Generate Speech
+                </button>
+                <button id="use-stt-result" class="secondary-btn">
+                    <span>📝</span> Use STT Result
+                </button>
+            </div>
+            <div id="tts-status-msg" class="status info">Enter text and click "Generate Speech"</div>
+            <div class="audio-controls">
+                <audio id="audio-player" class="audio-player" controls style="display: none;"></audio>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AudioServiceClient {
+            constructor() {
+                this.sttWebSocket = null;
+                this.mediaRecorder = null;
+                this.audioContext = null;
+                this.isRecording = false;
+                
+                this.init();
+            }
+
+            async init() {
+                await this.checkServiceStatus();
+                this.setupEventListeners();
+                this.setupTTSControls();
+            }
+
+            async checkServiceStatus() {
+                try {
+                    const sttResponse = await fetch('http://localhost:8001/health');
+                    const sttStatus = document.getElementById('stt-status');
+                    if (sttResponse.ok) {
+                        sttStatus.classList.add('online');
+                    }
+                } catch (error) {
+                    console.error('STT service not available:', error);
+                }
+
+                try {
+                    const ttsResponse = await fetch('http://localhost:8002/health');
+                    const ttsStatus = document.getElementById('tts-status');
+                    if (ttsResponse.ok) {
+                        ttsStatus.classList.add('online');
+                    }
+                } catch (error) {
+                    console.error('TTS service not available:', error);
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('start-recording').addEventListener('click', () => this.startRecording());
+                document.getElementById('stop-recording').addEventListener('click', () => this.stopRecording());
+                document.getElementById('generate-speech').addEventListener('click', () => this.generateSpeech());
+                document.getElementById('use-stt-result').addEventListener('click', () => this.useSttResult());
+            }
+
+            setupTTSControls() {
+                const controls = ['temperature', 'top-p', 'top-k'];
+                controls.forEach(control => {
+                    const input = document.getElementById(control);
+                    const display = document.getElementById(control + '-value');
+                    
+                    input.addEventListener('input', (e) => {
+                        display.textContent = e.target.value;
+                    });
+                });
+            }
+
+            async startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            sampleRate: 16000,
+                            channelCount: 1,
+                            echoCancellation: true,
+                            noiseSuppression: true
+                        }
+                    });
+
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    this.mediaRecorder = new MediaRecorder(stream, {
+                        mimeType: 'audio/webm'
+                    });
+
+                    this.sttWebSocket = new WebSocket('ws://localhost:8001/ws/stt');
+                    
+                    this.sttWebSocket.onopen = () => {
+                        this.updateSTTStatus('Connected to STT service', 'success');
+                    };
+
+                    this.sttWebSocket.onmessage = (event) => {
+                        try {
+                            const data = JSON.parse(event.data);
+                            if (data.error) {
+                                this.updateSTTStatus(`Error: ${data.error}`, 'error');
+                            } else {
+                                this.updateSTTResult(data.text);
+                                this.updateSTTStatus(`Transcribed: ${data.confidence ? (data.confidence * 100).toFixed(1) + '%' : 'N/A'} confidence`, 'success');
+                            }
+                        } catch (error) {
+                            console.error('Error parsing STT response:', error);
+                        }
+                    };
+
+                    this.sttWebSocket.onerror = (error) => {
+                        this.updateSTTStatus('WebSocket error occurred', 'error');
+                        console.error('WebSocket error:', error);
+                    };
+
+                    this.sttWebSocket.onclose = () => {
+                        this.updateSTTStatus('Connection closed', 'info');
+                    };
+
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0 && this.sttWebSocket.readyState === WebSocket.OPEN) {
+                            this.sttWebSocket.send(event.data);
+                        }
+                    };
+
+                    this.mediaRecorder.start(250); // Send data every 250ms
+                    this.isRecording = true;
+                    
+                    document.getElementById('start-recording').disabled = true;
+                    document.getElementById('stop-recording').disabled = false;
+                    document.getElementById('recording-indicator').classList.add('active');
+                    
+                    this.updateSTTStatus('Recording started...', 'info');
+
+                } catch (error) {
+                    console.error('Error starting recording:', error);
+                    this.updateSTTStatus('Error: Could not start recording. Please check microphone permissions.', 'error');
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                }
+
+                if (this.sttWebSocket) {
+                    this.sttWebSocket.close();
+                }
+
+                if (this.audioContext) {
+                    this.audioContext.close();
+                }
+
+                this.isRecording = false;
+                document.getElementById('start-recording').disabled = false;
+                document.getElementById('stop-recording').disabled = true;
+                document.getElementById('recording-indicator').classList.remove('active');
+                
+                this.updateSTTStatus('Recording stopped', 'info');
+            }
+
+            async generateSpeech() {
+                const text = document.getElementById('tts-input').value.trim();
+                if (!text) {
+                    this.updateTTSStatus('Please enter some text first', 'error');
+                    return;
+                }
+
+                const generateBtn = document.getElementById('generate-speech');
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<span>⏳</span> Generating...';
+
+                try {
+                    const requestData = {
+                        text: text,
+                        temperature: parseFloat(document.getElementById('temperature').value),
+                        top_p: parseFloat(document.getElementById('top-p').value),
+                        top_k: parseInt(document.getElementById('top-k').value)
+                    };
+
+                    this.updateTTSStatus('Generating speech...', 'info');
+
+                    const response = await fetch('http://localhost:8002/tts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    // Convert base64 to audio blob
+                    const audioData = atob(data.audio_data);
+                    const audioArray = new Uint8Array(audioData.length);
+                    for (let i = 0; i < audioData.length; i++) {
+                        audioArray[i] = audioData.charCodeAt(i);
+                    }
+                    
+                    const audioBlob = new Blob([audioArray], { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    const audioPlayer = document.getElementById('audio-player');
+                    audioPlayer.src = audioUrl;
+                    audioPlayer.style.display = 'block';
+                    audioPlayer.play();
+
+                    this.updateTTSStatus(`Speech generated successfully! Duration: ${data.duration.toFixed(2)}s, Generation time: ${data.generation_time_ms}ms`, 'success');
+
+                } catch (error) {
+                    console.error('Error generating speech:', error);
+                    this.updateTTSStatus(`Error: ${error.message}`, 'error');
+                } finally {
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '<span>🔊</span> Generate Speech';
+                }
+            }
+
+            useSttResult() {
+                const sttResult = document.getElementById('stt-result').value;
+                if (sttResult.trim()) {
+                    document.getElementById('tts-input').value = sttResult;
+                    this.updateTTSStatus('STT result loaded into TTS input', 'success');
+                } else {
+                    this.updateTTSStatus('No STT result available', 'error');
+                }
+            }
+
+            updateSTTStatus(message, type) {
+                const statusEl = document.getElementById('stt-status-msg');
+                statusEl.textContent = message;
+                statusEl.className = `status ${type}`;
+            }
+
+            updateSTTResult(text) {
+                const resultEl = document.getElementById('stt-result');
+                if (resultEl.value) {
+                    resultEl.value += ' ' + text;
+                } else {
+                    resultEl.value = text;
+                }
+                resultEl.scrollTop = resultEl.scrollHeight;
+            }
+
+            updateTTSStatus(message, type) {
+                const statusEl = document.getElementById('tts-status-msg');
+                statusEl.textContent = message;
+                statusEl.className = `status ${type}`;
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new AudioServiceClient();
+        });
+    </script>
+</body>
+</html>

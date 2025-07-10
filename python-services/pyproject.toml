@@ -1,2 +1,0 @@
-[tool.uv.workspace]
-members = ["llm_engine", "knowledge_graph", "shared", "tts_service"]
